@@ -8,6 +8,28 @@
 - to format: `make format`
 - assess size of the project: `make size`/`make sizex`
 
+## Wiring diagram
+
+- Light dependent sensor
+
+```
+5V (Nano) --- LDR --- A0 (Nano) --- 12kΩ Resistor --- GND (Nano)
+```
+
+- PWM output (for controlling magnet)
+
+```
+GND (Nano) --- GND (FluxGrip)
+D10 (Nano) --- PWM (FluxGrip) 
+```
+
+- Power
+
+```
+9V (Battery) --- VIN (Nano)
+GND (Battery) --- GND (Nano)
+```
+
 ## Documentation
 
 - Standard C libraries: https://en.cppreference.com/w/c/header.html
@@ -16,6 +38,7 @@
   - Atmega328P
   - PDV-P9008 Light Dependent Resistor
   - VEMD1060X01 Photodiode
+
 
 
 
