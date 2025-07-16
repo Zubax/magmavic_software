@@ -23,29 +23,51 @@ int main(void)
     platform_init();
     platform_adc_setup();
     platform_pwm_setup();
+
+    // This is to detect when Arduino reboots
+    uint8_t i = 0;
+    for (i = 0; i < 10; i++)
+    {
+        platform_led(i%2 == 0 ? true : false); // Toggle
+        _delay_ms(500);
+        platform_kick_watchdog();
+    }
+
+
+    bool magnet_on = false;
     while (true)
     {
-        uint16_t readout = 0;
-        readout          = platform_adc_read(0);
-        // TODO: Buffer readout results, so spurious readings don't accidentally trigger the magnet.
-
         // Report on the current state
         char buffer[BUFFER_SIZE];
-        snprintf(buffer, BUFFER_SIZE, "Current readout from A0: %u\r\n", readout);
+        snprintf(buffer, BUFFER_SIZE, "Current state of magnet: %s\r\n", magnet_on ? "ON" : "OFF");
         platform_serial_write(strlen(buffer), buffer);
 
-        if (readout > LIGHT_LEVEL_TRIGGER_THRESHOLD)
+        // Process incoming data
+        while (true)
         {
-            // Turn magnet on
-            platform_pwm_set(0, MAGNET_ON_DUTY_CYCLE_PCT);
-        }
-        else
-        {
-            // Turn magnet off
-            platform_pwm_set(0, MAGNET_OFF_DUTY_CYCLE_PCT);
+            const int16_t rx = platform_serial_read();
+            if (rx < 0)
+            {
+                break;
+            }
+            const char c = (char) rx;
+            if (c == 'a')
+            {
+                // Turn magnet on
+                magnet_on = true;
+            }
+            if (c == 'b')
+            {
+                // Turn magnet off
+                magnet_on = false;
+            }
         }
 
-        _delay_ms(1000);
+        // Update state of magnet
+        platform_pwm_set(0, magnet_on == true ? MAGNET_ON_DUTY_CYCLE_PCT : MAGNET_OFF_DUTY_CYCLE_PCT);
+
+        platform_kick_watchdog();
+        _delay_ms(200);
     }
 
     return 0;
