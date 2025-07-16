@@ -45,6 +45,7 @@ int main(void)
             platform_pwm_set(0, MAGNET_OFF_DUTY_CYCLE_PCT);
         }
 
+        platform_kick_watchdog();
         _delay_ms(1000);
     }
 
